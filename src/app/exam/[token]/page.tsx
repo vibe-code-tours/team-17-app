@@ -22,6 +22,7 @@ import {
   groupByTier,
   locateQuestion,
 } from "./helpers";
+import styles from "./review.module.css";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -164,48 +165,6 @@ const S = {
     fontSize: 13,
     color: "var(--warn-fg)",
     lineHeight: 1.5,
-  },
-  /* Review mode */
-  reviewList: {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-  },
-  reviewItem: (answered: boolean) => ({
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    padding: "12px 14px",
-    marginBottom: 8,
-    borderRadius: 8,
-    background: answered ? "var(--easy-bg)" : "var(--hard-bg)",
-    border: `1px solid ${answered ? "var(--easy-fg)" : "var(--hard-fg)"}`,
-    cursor: "pointer",
-    fontSize: 14,
-    color: "var(--foreground)",
-  }),
-  reviewStatus: (answered: boolean) => ({
-    width: 8,
-    height: 8,
-    borderRadius: "50%",
-    background: answered ? "var(--ok)" : "var(--err-fg)",
-    flexShrink: 0,
-  }),
-  reviewText: {
-    flex: 1,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap" as const,
-  },
-  reviewMeta: {
-    fontSize: 12,
-    color: "var(--muted)",
-    flexShrink: 0,
-  },
-  submitRow: {
-    display: "flex",
-    justifyContent: "center",
-    marginTop: 24,
   },
 } as const;
 
@@ -372,14 +331,14 @@ export default function TakeExamPage() {
     const answeredCount = flat.filter((q) => answers.has(q.id)).length;
     return (
       <div style={S.page}>
-        <div style={S.card}>
+        <div className={styles.card}>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--foreground)", margin: "0 0 8px" }}>
             Review your answers
           </h2>
           <p style={{ fontSize: 14, color: "var(--muted)", margin: "0 0 20px" }}>
             {answeredCount} of {flat.length} answered — click a question to jump back
           </p>
-          <ul style={S.reviewList}>
+          <ul className={styles.list}>
             {flat.map((q, idx) => {
               const answered = answers.has(q.id);
               const loc = locateQuestion(sections, q.id);
@@ -388,12 +347,14 @@ export default function TakeExamPage() {
                   <button
                     type="button"
                     data-testid={TESTID.questionNavItem}
-                    style={S.reviewItem(answered)}
+                    className={`${styles.item} ${answered ? styles.itemAnswered : styles.itemUnanswered}`}
                     onClick={() => jumpTo(idx)}
                   >
-                    <span style={S.reviewStatus(answered)} />
-                    <span style={S.reviewText}>{q.text}</span>
-                    <span style={S.reviewMeta}>
+                    <span
+                      className={`${styles.status} ${answered ? styles.statusAnswered : styles.statusUnanswered}`}
+                    />
+                    <span className={styles.text}>{q.text}</span>
+                    <span className={styles.meta}>
                       {q.difficulty} · {q.marks}m
                     </span>
                   </button>
@@ -401,17 +362,11 @@ export default function TakeExamPage() {
               );
             })}
           </ul>
-          <div style={S.submitRow}>
+          <div className={styles.submitRow}>
             <button
               type="button"
               data-testid={TESTID.submitBtn}
-              style={{
-                ...S.btn,
-                ...S.btnPrimary,
-                padding: "12px 32px",
-                fontSize: 15,
-                ...(submitting ? S.btnDisabled : {}),
-              }}
+              className={`${styles.submitBtn} ${submitting ? styles.submitBtnDisabled : ""}`.trim()}
               disabled={submitting}
               onClick={handleSubmit}
             >
